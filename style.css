@@ -1,74 +1,434 @@
-body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background-color: #f0f0f0;
+/* === RESET & BASE === */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-#game-container {
+:root {
+    --bg-from: #0f0c29;
+    --bg-mid: #302b63;
+    --bg-to: #24243e;
+    --text: #f0f0f5;
+    --text-muted: #9090aa;
+    --card-bg: rgba(255, 255, 255, 0.06);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --radius: 18px;
+    --radius-sm: 10px;
+    --gap: 6px;
+    --shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: linear-gradient(135deg, var(--bg-from) 0%, var(--bg-mid) 50%, var(--bg-to) 100%);
+    min-height: 100vh;
+    color: var(--text);
     display: flex;
     justify-content: center;
+    align-items: flex-start;
+    overflow-x: hidden;
+}
+
+/* === APP SHELL === */
+.app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 16px 24px;
+}
+
+/* === HEADER === */
+.app-header {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    margin: 20px auto;
+    padding: 8px 0 12px;
 }
 
-canvas {
-    border: 1px solid black;
-    box-sizing: border-box;
+.game-title {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    background: linear-gradient(90deg, #FF6B6B, #FFD93D, #6BCB77, #4D96FF, #845EC2);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 4s linear infinite;
 }
 
-#controls {
-    margin-top: 20px;
+@keyframes shimmer {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+}
+
+.score-badge {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 50px;
+    padding: 6px 18px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    min-width: 64px;
 }
 
-button {
-    margin-top: 10px;
-    padding: 10px 20px;
-    font-size: 18px;
+.score-label {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    line-height: 1.2;
+}
+
+.score-value {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #FFD93D;
+    line-height: 1.2;
+}
+
+/* === GAME BOARD === */
+.game-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 0;
+}
+
+.game-board {
+    display: grid;
+    gap: var(--gap);
+    background: rgba(0, 0, 0, 0.35);
+    padding: 8px;
+    border-radius: var(--radius);
+    width: min(88vw, 60vh, 420px);
+    height: min(88vw, 60vh, 420px);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--shadow), 0 0 0 1px rgba(255,255,255,0.03);
+    position: relative;
+}
+
+/* === TILES === */
+.tile {
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     cursor: pointer;
+    transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.12s ease,
+                opacity 0.12s ease;
+    box-shadow:
+        0 4px 14px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    border: none;
+    position: relative;
+    overflow: hidden;
 }
 
-#rules-modal {
+.tile::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 45%;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-sm) var(--radius-sm) 50% 50%;
+    pointer-events: none;
+}
+
+.tile:active {
+    transform: scale(0.88);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.tile.empty {
+    background: rgba(255, 255, 255, 0.04) !important;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    cursor: default;
+    border: 2px dashed rgba(255, 255, 255, 0.12);
+}
+
+.tile.empty::after {
+    display: none;
+}
+
+.tile.placeholder {
+    background: rgba(255, 255, 255, 0.04);
+    border: 2px dashed rgba(255, 255, 255, 0.1);
+    cursor: default;
+}
+
+.tile.placeholder::after {
+    display: none;
+}
+
+/* === MESSAGE === */
+.message {
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 10px 24px;
+    border-radius: 50px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: all 0.3s ease;
+}
+
+.message.win {
+    background: linear-gradient(135deg, rgba(255, 217, 61, 0.15), rgba(107, 203, 119, 0.15));
+    border: 1px solid rgba(107, 203, 119, 0.35);
+    color: #6BCB77;
+    animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-size: 1.05rem;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.7); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* === CONTROLS FOOTER === */
+.controls {
+    padding: 8px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.difficulty-control {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 16px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.difficulty-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.difficulty-badge {
+    background: linear-gradient(135deg, #FF6B6B, #FFD93D);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+    font-size: 1rem;
+}
+
+/* Slider */
+.slider {
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.15);
+    outline: none;
+    cursor: pointer;
+    display: block;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FF6B6B, #FFD93D);
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(255, 107, 107, 0.6);
+    transition: transform 0.1s;
+}
+
+.slider::-webkit-slider-thumb:active {
+    transform: scale(1.15);
+}
+
+.slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FF6B6B, #FFD93D);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 10px rgba(255, 107, 107, 0.6);
+}
+
+.difficulty-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+/* Buttons */
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    flex: 1;
+    padding: 15px 12px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+    letter-spacing: 0.3px;
+}
+
+.btn:active {
+    transform: scale(0.95);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+    color: white;
+    box-shadow: 0 4px 18px rgba(255, 107, 107, 0.45);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 6px 22px rgba(255, 107, 107, 0.6);
+}
+
+.btn-secondary {
+    background: var(--card-bg);
+    color: var(--text);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* === MODAL === */
+.modal {
     display: none;
     position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgb(0,0,0);
-    background-color: rgba(0,0,0,0.4);
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+}
+
+.modal.active {
+    display: flex;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    text-align: left; /* Align text to the left */
+    background: linear-gradient(135deg, #1a1a3e, #16213e);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    padding: 28px 24px 24px;
+    width: 100%;
+    max-width: 360px;
+    position: relative;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+    animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.slider {
-    width: 300px; /* 你可以根据需要调整这个值 */
+@keyframes slideUp {
+    from { transform: translateY(40px) scale(0.9); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.modal-content h2 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    text-align: center;
+    background: linear-gradient(90deg, #FF6B6B, #FFD93D, #6BCB77);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .close-button {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.close-button:hover,
-.close-button:focus {
-    color: black;
-    text-decoration: none;
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--card-border);
+    color: var(--text);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    font-size: 1.1rem;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    line-height: 1;
 }
-```
 
-这个实现方式确保了滑动拼图游戏从3x3开始，难度可以调节，并且包括了规则说明、成功与失败的通告。
+.close-button:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.rules-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rule-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text);
+}
+
+.rule-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}

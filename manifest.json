@@ -1,0 +1,22 @@
+{
+    "name": "滑动拼图",
+    "short_name": "拼图",
+    "description": "经典数字滑动拼图游戏，支持 3×3、4×4、5×5 三种难度",
+    "start_url": "./",
+    "display": "standalone",
+    "background_color": "#0f0c29",
+    "theme_color": "#0f0c29",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "./icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "./icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

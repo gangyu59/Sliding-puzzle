@@ -1,67 +1,79 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sliding Puzzle</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>滑动拼图</title>
     <link rel="stylesheet" href="style.css">
-    <script src="main.js" defer></script>
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="main.js" defer></script>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/service-worker.js')
-            .then(() => console.log('Service Worker Registered'))
-            .catch(error => console.error('Service Worker Registration failed:', error));
+            navigator.serviceWorker.register('./service-worker.js')
+                .then(reg => {
+                    console.log('Service Worker Registered');
+                    reg.update();
+                })
+                .catch(err => console.error('Service Worker Registration failed:', err));
         }
     </script>
 </head>
 <body>
-    <h1>Sliding Puzzle</h1>
-    <div id="move-counter">移动次数 = 0</div>
-    <div id="game-container">
-        <canvas id="game-canvas"></canvas>
-    </div>
-    <div id="controls">
-        <label for="difficulty-slider">难度：
-            <span id="difficulty-label">3x3</span>
-        </label>
-        <input type="range" id="difficulty-slider" class="slider" min="3" max="5" value="3">
-    </div>
-    <button id="start-button">开始</button><br>
-    <button id="rules-button">游戏规则</button><br><br>
-    <div id="message"></div>
+    <div class="app">
+        <header class="app-header">
+            <h1 class="game-title">滑动拼图</h1>
+            <div class="score-badge">
+                <span class="score-label">步数</span>
+                <span id="move-counter" class="score-value">0</span>
+            </div>
+        </header>
 
+        <main class="game-main">
+            <div id="game-board" class="game-board"></div>
+            <div id="message" class="message"></div>
+        </main>
+
+        <footer class="controls">
+            <div class="difficulty-control">
+                <div class="difficulty-header">
+                    <span>游戏难度</span>
+                    <span id="difficulty-label" class="difficulty-badge">3×3</span>
+                </div>
+                <input type="range" id="difficulty-slider" class="slider" min="3" max="5" value="3">
+                <div class="difficulty-labels">
+                    <span>简单 3×3</span>
+                    <span>中等 4×4</span>
+                    <span>困难 5×5</span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button id="start-button" class="btn btn-primary">开始游戏</button>
+                <button id="rules-button" class="btn btn-secondary">游戏规则</button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Rules Modal -->
     <div id="rules-modal" class="modal">
         <div class="modal-content">
-            <span class="close-button">&times;</span>
+            <button class="close-button" id="close-modal">&times;</button>
             <h2>游戏规则</h2>
-            <p>通过移动方块，将数字按顺序排列。</p>
-            <ul style="text-align: left;">
-                <li>点击空白方块旁边的方块来移动它。</li>
-                <li>继续移动，直到所有方块按顺序排列。</li>
-            </ul>
+            <div class="rules-list">
+                <div class="rule-item">
+                    <span class="rule-icon">👆</span>
+                    <span>点击紧靠空白格的数字方块来移动它</span>
+                </div>
+                <div class="rule-item">
+                    <span class="rule-icon">🎯</span>
+                    <span>将数字从左到右、从上到下按顺序排好</span>
+                </div>
+                <div class="rule-item">
+                    <span class="rule-icon">⭐</span>
+                    <span>步数越少，表现越好！</span>
+                </div>
+            </div>
         </div>
     </div>
-
-    <script>
-        const modal = document.getElementById("rules-modal");
-        const btn = document.getElementById("rules-button");
-        const span = document.getElementsByClassName("close-button")[0];
-
-        btn.onclick = function() {
-            modal.style.display = "block";
-        }
-
-        span.onclick = function() {
-            modal.style.display = "none";
-        }
-
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-    </script>
 </body>
 </html>
